@@ -54,8 +54,8 @@ class Server:
             return username, otp, time_start
         
         except Exception as e:
-            print(e)
-            return None, None
+            print(f"error in handler, error: {e}")
+            return None, None, None
             
     def enc_otp_with_pkey(self, otp, pkey):
         pkey = load_pem_public_key(pkey.encode('utf-8'))
@@ -78,13 +78,14 @@ class Server:
     def gen_otp(self):
         characters = string.ascii_letters + string.digits
         otp = ''.join(random.choices(characters, k=6))
+        print(f"generated otp: {otp}")
         return otp
         
     def get_user_info(self, username):
         try:
             conn = sqlite3.connect('data/database.db')
             cursor = conn.cursor()
-            cursor.execute(f"SELECT public_key FROM users WHERE username = ?", (username,))
+            cursor.execute(f"SELECT * FROM users WHERE username = ?", (username,))
             user = cursor.fetchone()
             if not user:
                 return None
@@ -140,6 +141,10 @@ class Server:
             username, otp, time_start = self.handler(conn, addr)
 
             input_username = input("Enter username: ")
+            if input_username != username:
+                print("You are not the requesting user!")
+                continue
+
             input_password = input("Enter password: ")
             input_otp = input("Enter OTP: ")
 
@@ -148,8 +153,5 @@ class Server:
             else:
                 print("Login failed!")
 
-
-            
-
-        
-                
+server = Server()
+server.start() 
