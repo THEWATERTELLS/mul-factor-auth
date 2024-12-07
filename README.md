@@ -24,6 +24,29 @@ Client
 
 ### Pipeline
 
-1. client send an authentication request
+1. client send an authentication request, with a username
 
-2. 
+2. server check if the location in the legal range
+
+3. if valid location, send a one time code, start a timer, one time code expires 1 min
+
+4. user get the one time code and input username, OTP, real password to the server
+
+5. user get access
+
+### Communication Protocol
+
+1. For OTP:
+
+
+```
+client -> server
+username,location
+xxxxxxx,xxx.xxxx:xxx.xxxx
+
+server -> client
+{otp:xxxxxx}
+
+```
+
+2. For 
