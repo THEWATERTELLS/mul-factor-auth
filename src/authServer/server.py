@@ -9,6 +9,7 @@ from cryptography.hazmat.primitives.serialization import load_pem_public_key
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
 import base64
+from adminSys import AdminSys
 
 CURRENT_LOCATION = (104.00, 30.56) # Sichuan University, Chengdu, China
 
@@ -150,6 +151,11 @@ class Server:
 
             if self.log_in(input_username, input_password, input_otp, otp, time_start):
                 print("Login successful!")
+                if username == 'admin':
+                    admin_sys = AdminSys()
+                    admin_sys.start()
+                else:
+                    print(f"Welcome, {username}!")
             else:
                 print("Login failed!")
 
