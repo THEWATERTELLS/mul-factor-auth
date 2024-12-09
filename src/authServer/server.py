@@ -12,6 +12,7 @@ import base64
 from adminSys import AdminSys
 
 CURRENT_LOCATION = (104.00, 30.56) # Sichuan University, Chengdu, China
+TIME_START = 1733000000
 
 class Server:
     
@@ -44,14 +45,21 @@ class Server:
             
             if not verify:
                 conn.sendall(b"Invalid")
+                conn.close()
+                return None, None, None
             
             otp = self.gen_otp()
             enc_otp = self.enc_otp_with_pkey(otp, pkey_str)
 
             time_start = time.time()
             conn.sendall(enc_otp.encode())
+            print(f"Sent encrypted OTP")
+            # print(f"encrypted OTP: {enc_otp}")
+            # print(f"Sent OTP: {otp}")
+            time.sleep(3)
 
             conn.close()
+            print("connection closed")
             return username, otp, time_start
         
         except Exception as e:
@@ -79,7 +87,7 @@ class Server:
     def gen_otp(self):
         characters = string.ascii_letters + string.digits
         otp = ''.join(random.choices(characters, k=6))
-        print(f"generated otp: {otp}")
+        # print(f"generated otp: {otp}")
         return otp
         
     def get_user_info(self, username):
@@ -118,46 +126,66 @@ class Server:
         user_info = self.get_user_info(username)
         pw_hash = user_info[2]
 
-        for _ in range(5):
-
-            if input_otp == correct_otp and time.time() - time_start < 120:
-                if checkpw(password.encode('utf-8'), pw_hash.encode('utf-8')):
-                    
-                    return True
-                    
-                else: 
-                    print("Incorrect password")
-                    continue    
-            else:
-                print("Incorrect OTP or OTP expired")
-                continue
+        if input_otp == correct_otp and time.time() - time_start < 120:
+            if checkpw(password.encode('utf-8'), pw_hash.encode('utf-8')):
+                return True 
+            else: 
+                print("Incorrect password")
+        else:
+            print("Incorrect OTP or OTP expired")
 
         return False
     
+    def check_user_failure(self, username):
+        conn = sqlite3.connect('data/database.db')
+        c = conn.cursor()
+        c.execute("SELECT login_fail_time FROM failure WHERE username = ?", (username,))
+        try:
+            fail_time = c.fetchone()[0]
+        except:
+            fail_time = None
+        conn.close()
+        if fail_time is None:
+            return False
+        if int(time.time() - TIME_START) - fail_time < 60:
+            return True
+        return False
+
+    def record_user_failure(self, username):
+        conn = sqlite3.connect('data/database.db')
+        c = conn.cursor()
+        c.execute("UPDATE failure SET login_fail_time = ? WHERE username = ?", (int(time.time() - TIME_START), username))
+        conn.commit()
+        conn.close()
 
     def start(self):
-        print("Server started")
         while True:
+            print("Server started")
             conn, addr = self.accept_connection()
             username, otp, time_start = self.handler(conn, addr)
+            for i in range(5):
+                input_username = input("Enter username: ")
+                if input_username != username:
+                    print("You are not the requesting user!")
+                    continue
+                if self.check_user_failure(username):
+                    print("you are prohibitted from logging in")
+                    break
 
-            input_username = input("Enter username: ")
-            if input_username != username:
-                print("You are not the requesting user!")
-                continue
+                input_password = input("Enter password: ")
+                input_otp = input("Enter OTP: ")
 
-            input_password = input("Enter password: ")
-            input_otp = input("Enter OTP: ")
-
-            if self.log_in(input_username, input_password, input_otp, otp, time_start):
-                print("Login successful!")
-                if username == 'admin':
-                    admin_sys = AdminSys()
-                    admin_sys.start()
+                if self.log_in(input_username, input_password, input_otp, otp, time_start):
+                    print("Login successful!")
+                    if username == 'admin':
+                        admin_sys = AdminSys()
+                        admin_sys.start()
+                    else:
+                        print(f"Welcome, {username}!")
                 else:
-                    print(f"Welcome, {username}!")
-            else:
-                print("Login failed!")
+                    print("Login failed! wait 1 minute to try again")
+                    break
+            self.record_user_failure(username)
 
 server = Server()
 server.start() 

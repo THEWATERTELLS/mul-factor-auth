@@ -49,4 +49,12 @@ server -> client
 
 ```
 
-2. For 
+### Database
+
+```
+0|id|INTEGER|0||1
+1|username|TEXT|1||0
+2|password_hash|TEXT|1||0
+3|public_key|TEXT|1||0
+4|device_id|TEXT|0||0
+```
