@@ -36,8 +36,6 @@ Client
 
 ### Communication Protocol
 
-1. For OTP:
-
 
 ```
 client -> server
@@ -45,7 +43,7 @@ username,location
 xxxxxxx,xxx.xxxx:xxx.xxxx
 
 server -> client
-{otp:xxxxxx}
+xxxxxx
 
 ```
 
@@ -57,4 +55,47 @@ server -> client
 2|password_hash|TEXT|1||0
 3|public_key|TEXT|1||0
 4|device_id|TEXT|0||0
+
+0|username|TEXT|1||0
+1|login_fail_time|INTEGER|0||0
 ```
+
+### Usage
+
+For all-python testing:
+
+run server:
+
+```bash
+python src/authServer/server.py
+```
+
+You will see server listening on port 12345
+
+Then you have 2 choice for running the client
+
+1. Xcode project:
+
+uncomment the following code:
+
+```swift
+#preview{
+    ContentView()
+}
+```
+
+for a while you will see the previewed simulator on the screen
+
+click the `send request` button
+
+2. python client:
+
+This python project has the same fucntion as the swift project, except the `CoreLocation` part which is for location authentication, and is for testing and reproducing use when the Xcode project is unavailable because of environment problems.
+
+```bash
+python src/authClient/client_test.py
+```
+
+The defaut login user is `admin`, and the password is `admin`
+
+If more users are needed, please login as admin and register manually.

@@ -56,7 +56,7 @@ class Server:
             print(f"Sent encrypted OTP")
             # print(f"encrypted OTP: {enc_otp}")
             # print(f"Sent OTP: {otp}")
-            time.sleep(3)
+            # time.sleep(3)
 
             conn.close()
             print("connection closed")
