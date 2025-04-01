@@ -1,4 +1,4 @@
-## iOS Token and Password based Multi-factor authentication system 
+## [Course Design] iOS Token and Password based Multi-factor authentication system 
 
 Multi-factor authentication system using iOS app token and password.
 
